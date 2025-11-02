@@ -1,6 +1,6 @@
-# Wikipedia Report Generator API
+# Cite The Cite, Wikipedia Report Generator API
 
-A FastAPI service that generates citation-backed reports from Wikipedia articles using MediaWiki API and LLM summarization.
+Wikipedia Report Generator API, A FastAPI service that generates citation-backed reports from Wikipedia articles using MediaWiki API and LLM summarization.
 
 ---
 
