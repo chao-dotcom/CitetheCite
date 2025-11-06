@@ -174,6 +174,18 @@ Visit:
 - **Interactive Docs:** http://localhost:8000/docs
 - **OpenAPI Schema:** http://localhost:8000/openapi.json
 
+### Interactive API Documentation
+
+The service includes interactive API documentation powered by Swagger UI. Visit `http://localhost:8000/docs` to explore:
+
+![Interactive API Documentation](asset/interactive_docs.png)
+
+The interactive docs allow you to:
+- Browse all available endpoints
+- View request/response schemas
+- Test API calls directly from the browser
+- See example requests and responses
+
 ### First Request
 
 ```bash
