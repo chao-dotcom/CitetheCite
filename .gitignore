@@ -61,6 +61,7 @@ guide/
 .env
 .env.local
 .env.*.local
+.env.example
 
 # Database
 *.db

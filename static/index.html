@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cite the Cite - Wikipedia Citation Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        #urlInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #urlInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #generateBtn {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #generateBtn:hover:not(:disabled) {
+            background: #5568d3;
+        }
+
+        #generateBtn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .options {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-group label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .option-group select {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .result-section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .summary-section {
+            margin-bottom: 40px;
+        }
+
+        .summary-section h2 {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .summary-content {
+            line-height: 1.8;
+            color: #555;
+            font-size: 1.1em;
+            white-space: pre-wrap;
+        }
+
+        .references-section h2 {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .references-list {
+            list-style: none;
+            counter-reset: ref-counter;
+        }
+
+        .references-list li {
+            counter-increment: ref-counter;
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .references-list li::before {
+            content: "[" counter(ref-counter) "]";
+            position: absolute;
+            left: 0;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .metadata {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .metadata-item {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Cite the Cite 📚</h1>
+            <p>Powered By Chao</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="urlInput" 
+                    placeholder="Enter Wikipedia URL (e.g., https://en.wikipedia.org/wiki/Python_(programming_language))"
+                    value="https://en.wikipedia.org/wiki/Kruskal_count"
+                >
+                <button id="generateBtn" onclick="generateReport()">Generate Report</button>
+            </div>
+            <div class="options">
+                <div class="option-group">
+                    <label for="citationStyle">Citation Style:</label>
+                    <select id="citationStyle">
+                        <option value="APA">APA</option>
+                        <option value="MLA">MLA</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label for="reportLength">Report Length:</label>
+                    <select id="reportLength">
+                        <option value="short">Short</option>
+                        <option value="medium" selected>Medium</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label for="maxLinks">Max Related Links:</label>
+                    <select id="maxLinks">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <p>🔄 Generating report... This may take a few seconds.</p>
+        </div>
+
+        <div id="resultSection" class="result-section">
+            <div class="result-title" id="resultTitle"></div>
+            
+            <div class="summary-section">
+                <h2>Summary</h2>
+                <div class="summary-content" id="summaryContent"></div>
+            </div>
+
+            <div class="references-section">
+                <h2>References</h2>
+                <ol class="references-list" id="referencesList"></ol>
+            </div>
+
+            <div class="metadata" id="metadata"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin;
+
+        // Allow Enter key to submit
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateReport();
+            }
+        });
+
+        async function generateReport() {
+            const urlInput = document.getElementById('urlInput');
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const resultSection = document.getElementById('resultSection');
+            const errorDiv = document.getElementById('errorDiv');
+
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                alert('Please enter a Wikipedia URL');
+                return;
+            }
+
+            // Validate Wikipedia URL
+            if (!url.match(/https?:\/\/([a-z]{2,3})\.wikipedia\.org\/wiki\//i)) {
+                alert('Please enter a valid Wikipedia URL (e.g., https://en.wikipedia.org/wiki/Article_Title)');
+                return;
+            }
+
+            // Show loading, hide results
+            loading.style.display = 'block';
+            resultSection.classList.remove('show');
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+
+            // Remove any previous error
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+
+            try {
+                const requestBody = {
+                    url: url,
+                    citation_style: document.getElementById('citationStyle').value,
+                    report_length: document.getElementById('reportLength').value,
+                    max_related_links: parseInt(document.getElementById('maxLinks').value)
+                };
+
+                const response = await fetch(`${API_BASE_URL}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to generate report');
+                }
+
+                // Display results
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || 'Failed to generate report. Please try again.');
+            } finally {
+                loading.style.display = 'none';
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate Report';
+            }
+        }
+
+        function displayResults(data) {
+            const resultSection = document.getElementById('resultSection');
+            const resultTitle = document.getElementById('resultTitle');
+            const summaryContent = document.getElementById('summaryContent');
+            const referencesList = document.getElementById('referencesList');
+            const metadata = document.getElementById('metadata');
+
+            // Display title (strip HTML if present)
+            let title = data.title || 'Untitled';
+            if (title.includes('<')) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = title;
+                title = tempDiv.textContent || tempDiv.innerText || title;
+            }
+            resultTitle.textContent = title;
+
+            // Display summary
+            let summary = data.summary || '';
+            // Convert citation markers to clickable links
+            summary = summary.replace(/\[(\d+)\]/g, '<a href="#ref-$1" style="color: #667eea; text-decoration: none; font-weight: 600;">[$1]</a>');
+            summaryContent.innerHTML = summary;
+
+            // Display references
+            referencesList.innerHTML = '';
+            if (data.bibliography && data.bibliography.length > 0) {
+                data.bibliography.forEach((ref, index) => {
+                    const li = document.createElement('li');
+                    li.id = `ref-${index + 1}`;
+                    li.textContent = ref;
+                    referencesList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = 'No references available';
+                referencesList.appendChild(li);
+            }
+
+            // Display metadata
+            if (data.metadata) {
+                const metaHtml = `
+                    <div class="metadata-item"><strong>Processing Time:</strong> ${data.processing_time_seconds}s</div>
+                    <div class="metadata-item"><strong>Total Sources:</strong> ${data.metadata.total_sources || 'N/A'}</div>
+                    <div class="metadata-item"><strong>Language:</strong> ${data.metadata.language || 'N/A'}</div>
+                    <div class="metadata-item"><strong>Generated:</strong> ${new Date(data.generated_at).toLocaleString()}</div>
+                `;
+                metadata.innerHTML = metaHtml;
+            }
+
+            // Show result section
+            resultSection.classList.add('show');
+            
+            // Scroll to results
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function showError(message) {
+            const inputSection = document.querySelector('.input-section');
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'errorDiv';
+            errorDiv.className = 'error';
+            errorDiv.textContent = `Error: ${message}`;
+            inputSection.appendChild(errorDiv);
+        }
+    </script>
+</body>
+</html>
+

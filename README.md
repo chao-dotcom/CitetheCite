@@ -2,6 +2,14 @@
 
 Wikipedia Report Generator API, A FastAPI service that generates citation-backed reports from Wikipedia articles using MediaWiki API and LLM summarization.
 
+## Demo & Assets
+
+![Cite the Cite Demo](asset/citeThecite_thumbnail.png)
+
+**Demo Video:** [citeThecite_demo.mp4](asset/citeThecite_demo.mp4)
+
+![Meme](asset/meme.jpeg)
+
 ---
 
 ## Table of Contents
@@ -19,14 +27,15 @@ Wikipedia Report Generator API, A FastAPI service that generates citation-backed
 
 This service accepts a Wikipedia URL and generates a structured, citation-backed report. The process includes:
 
-1. Fetching the main Wikipedia page via MediaWiki API
-2. Extracting up to 3 related articles
-3. Processing content and creating proper citations
-4. Generating an LLM-powered summary with inline citation markers
-5. Formatting bibliography in APA or MLA style
-6. Returning structured JSON response
+1. **Fetching** the main Wikipedia page via MediaWiki API
+2. **Extracting** external references from Wikipedia articles (not Wikipedia itself)
+3. **Deduplicating** and filtering references (removes Wikipedia/Wikidata links, limits to top 30)
+4. **Processing** content and creating proper citations from external sources
+5. **Generating** an LLM-powered summary with multiple inline citation markers [1], [2], [3]...
+6. **Formatting** bibliography in APA or MLA style (only cited sources)
+7. **Returning** structured JSON response with web interface support
 
-Use cases:
+**Use cases:**
 - Academic research assistance
 - Content creation with proper attribution
 - Automated literature review generation
@@ -37,14 +46,86 @@ Use cases:
 ## Features
 
 - **MediaWiki API Integration** - Uses the official API, no HTML scraping
-- **Automatic Citation Tracking** - Every claim is linked to its source
+- **External Reference Extraction** - Cites original sources, not Wikipedia
+- **Smart Reference Processing** - Deduplication, filtering, and quality control
+- **Multiple Citations** - AI uses [1], [2], [3]... throughout summary
 - **Multiple Citation Styles** - Supports APA and MLA
+- **Web Interface** - Beautiful UI for easy interaction
 - **Related Article Discovery** - Automatically finds relevant sources
 - **Rate Limiting** - Respects Wikipedia's infrastructure
 - **Reproducible Results** - Tracks Wikipedia revision IDs
 - **OpenAPI Documentation** - Auto-generated interactive docs
 - **Async/Await** - Non-blocking HTTP operations
 - **Error Handling** - Graceful degradation with detailed error messages
+
+---
+
+## Architecture
+
+### System Design
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           Web Interface (Browser)                         │
+│                    ┌──────────────────────────────────┐                 │
+│                    │   static/index.html              │                 │
+│                    │   - URL Input Form               │                 │
+│                    │   - Citation Style Selector      │                 │
+│                    │   - Results Display               │                 │
+│                    └──────────────┬───────────────────┘                 │
+└───────────────────────────────────┼─────────────────────────────────────┘
+                                    │ HTTP POST /generate
+                                    │ {url, citation_style, report_length}
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        FastAPI Application (main.py)                     │
+│                                                                           │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                    ReportGenerator                              │   │
+│  │                  (Main Orchestrator)                            │   │
+│  └──┬──────────────────────┬──────────────────────┬───────────────┘   │
+│     │                      │                      │                    │
+│     ▼                      ▼                      ▼                    │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────────────┐    │
+│  │WikipediaClient│   │ContentProcessor│  │   LLMGenerator        │    │
+│  │              │   │              │   │   (OpenAI API)         │    │
+│  │ - fetch_page │   │ - extract_   │   │   - generate_summary   │    │
+│  │ - extract_   │   │   references │   │   - Multiple citations │    │
+│  │   related    │   │ - extract_   │   │   - Citation mapping   │    │
+│  │   links      │   │   paragraphs │   │                        │    │
+│  └──────┬───────┘   │ - create_    │   └───────────┬────────────┘    │
+│         │           │   citation   │               │                   │
+│         │           │   from_ref   │               │                   │
+│         │           └──────┬───────┘               │                   │
+│         │                  │                       │                   │
+│         ▼                  ▼                       ▼                   │
+│  ┌──────────────────────────────────────────────────────────────┐     │
+│  │              CitationFormatter                               │     │
+│  │  - format_apa()  - format_mla()  - format_bibliography()     │     │
+│  └──────────────────────────────────────────────────────────────┘     │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+         │                    │                    │
+         ▼                    ▼                    ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│  Wikipedia  │    │  Wikipedia   │    │   OpenAI     │
+│  MediaWiki   │    │  References  │    │   GPT API   │
+│  API         │    │  (External)  │    │              │
+└──────────────┘    └──────────────┘    └──────────────┘
+         │                    │                    │
+         └────────────────────┴────────────────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │   JSON Response      │
+                    │   {                  │
+                    │     title,           │
+                    │     summary,         │
+                    │     sources,         │
+                    │     bibliography    │
+                    │   }                  │
+                    └──────────────────────┘
+```
 
 ---
 
@@ -89,9 +170,10 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Visit:
-- API: http://localhost:8000
-- Interactive Docs: http://localhost:8000/docs
-- OpenAPI Schema: http://localhost:8000/openapi.json
+- **Web Interface:** http://localhost:8000
+- **API:** http://localhost:8000/generate
+- **Interactive Docs:** http://localhost:8000/docs
+- **OpenAPI Schema:** http://localhost:8000/openapi.json
 
 ### First Request
 
