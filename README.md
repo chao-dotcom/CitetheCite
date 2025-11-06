@@ -6,7 +6,7 @@ Wikipedia Report Generator API, A FastAPI service that generates citation-backed
 
 ![Cite the Cite Demo](asset/citeThecite_thumbnail.png)
 
-**Demo Video:** [citeThecite_demo.mp4](asset/citeThecite_demo.mp4)
+**Demo Video:** [Watch on YouTube](https://youtu.be/HFS2E9ivCEM)
 
 ![Meme](asset/meme.jpeg)
 
